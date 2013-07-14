@@ -160,29 +160,6 @@ class Filesystem extends Source {
 		}
 
 		return unlink($fullPath);
-
-//		if ($options['prependLocation']) {
-//			$path = "{$this->_location}/{$path}";
-//		}
-//
-//		if (!file_exists($path)) {
-//			return false;
-//		}
-//
-//		if (is_dir($path)) {
-//			if ($options['recursive']) {
-//				foreach (new DirectoryIterator($path) as $d) {
-//					if ($d->isDot()) {
-//						continue;
-//					}
-//					$this->remove("{$path}/{$d->getFilename()}", array(
-//						'prependLocation' => false
-//					));
-//				}
-//			}
-//			return rmdir($path);
-//		}
-//		return unlink($path);
 	}
 
 }
