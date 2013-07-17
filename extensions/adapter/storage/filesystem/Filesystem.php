@@ -80,7 +80,24 @@ class Filesystem extends Source {
 		return false;
 	}
 
-	public function upload(array $file, $destination, array $options = array()) {
+	/**
+	 * Upload file to your location
+	 *
+	 * @param array $file Single uploaded file
+	 * @param string $destination
+	 * @param array $options
+	 * @return bool
+	 */
+	public function upload(array $file, $destination = null, array $options = array()) {
+		if (isset($file['error']) && $file['error'] === UPLOAD_ERR_OK) {
+			$destination = ($destination) ? $file['name'] : $destination . '/' . $file['name'];
+			$destination = "{$this->_location}/{$destination}";
+
+			if (file_exists($file['tmp_name']) && !file_exists($destination)) {
+				return @rename($file['tmp_name'], $destination);
+			}
+		}
+
 		return false;
 	}
 

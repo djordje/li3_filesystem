@@ -20,8 +20,7 @@ class FilesystemTest extends \lithium\test\Unit {
 
 		$this->_timestamp = time();
 
-		$this->_tmp_dir  = Libraries::path('li3_filesystem\\', array('dirs' => true));
-		$this->_tmp_dir .= "/tests/location/{$this->_timestamp}_test";
+		$this->_tmp_dir = sys_get_temp_dir() . '/' . $this->_timestamp . '_test';
 
 		Locations::add('test', array(
 			'adapter' => 'Filesystem',
@@ -87,6 +86,23 @@ class FilesystemTest extends \lithium\test\Unit {
 		$this->assertFalse($this->_adapter->remove('Test_1', array('recursive' =>false)));
 
 		$this->assertTrue($this->_adapter->remove('Test_1'));
+	}
+
+	public function testUpload() {
+		$tmpFile = tempnam(sys_get_temp_dir(), 'li3');
+		file_put_contents($tmpFile, 'Hello world!');
+
+		$file = array(
+			'name' => 'test.txt',
+			'type' => 'text/plain',
+			'size' => filesize($tmpFile),
+			'tmp_name' => $tmpFile,
+			'error' => UPLOAD_ERR_NO_FILE
+		);
+		$this->assertFalse($this->_adapter->upload($file));
+
+		$file['error'] = UPLOAD_ERR_OK;
+		$this->assertTrue($this->_adapter->upload($file));
 	}
 
 	public function testLs() {
