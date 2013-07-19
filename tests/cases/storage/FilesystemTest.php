@@ -99,6 +99,24 @@ class FilesystemTest extends Unit {
 		$this->assertTrue(Filesystem::upload('test-2', $file));
 	}
 
+	public function testUploadValidation() {
+		$file = array(
+			'name' => '',
+			'type' => 'text/plain',
+			'size' => 510,
+			'tmp_name' => '/tmp/FooBar.tmp',
+			'error' => UPLOAD_ERR_OK
+		);
+		$validates = array(
+			'name' => array('notEmpty', 'message' => 'File must have name!'),
+			'size' => array('inRange', 'upper' => 192, 'message' => 'File size incorrect!')
+		);
+
+		$this->assertFalse(Filesystem::upload('test-2', $file, null, compact('validates')));
+		$this->assertEqual('File must have name!', Filesystem::$uploadErrors['name'][0]);
+		$this->assertEqual('File size incorrect!', Filesystem::$uploadErrors['size'][0]);
+	}
+
 	public function testLs() {
 		$this->assertFalse(Filesystem::ls('test-2', 'Test_1'));
 

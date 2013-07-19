@@ -56,6 +56,13 @@ class Filesystem extends \lithium\core\StaticObject {
 		'locations' => 'li3_filesystem\storage\Locations'
 	);
 
+	/**
+	 * Placeholder for storing upload validation errors
+	 *
+	 * @var array
+	 */
+	public static $uploadErrors = array();
+
 	protected static function _getAdapter($location) {
 		if (!isset(static::$_instances['adapter'][$location])) {
 			$locations = static::$_classes['locations'];
@@ -129,10 +136,13 @@ class Filesystem extends \lithium\core\StaticObject {
 			return false;
 		}
 
+		static::$uploadErrors = array();
+
 		if (!empty($options['validates']) && is_array($options['validates'])) {
 			$errors = Validator::check($file, $options['validates']);
 			if (!empty($errors)) {
-				return $errors;
+				static::$uploadErrors = $errors;
+				return false;
 			}
 		}
 
