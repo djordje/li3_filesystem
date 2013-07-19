@@ -1,5 +1,8 @@
 #### li3_filesystem - File management for the [Lithium PHP framework](https://github.com/UnionOfRAD/lithium)
 
+[![Latest Stable Version](https://poser.pugx.org/djordje/li3_filesystem/v/stable.png)](https://packagist.org/packages/djordje/li3_filesystem)
+[![Build Status](https://travis-ci.org/djordje/li3_filesystem.png?branch=master)](https://travis-ci.org/djordje/li3_filesystem)
+
 This library enable easy file operations in the Lithium PHP framework.
 
 This is based on extracted and better organized logic from [li3_filemanager](https://github.com/djordje/li3_filemanager)
@@ -66,7 +69,3 @@ and inherits from `li3_filesystem\storage\filesystem\Source`.
 `Source` abstract class has defined abstarct methods that all adapters must implement `ls`, `mkdir`,
 `upload`, `copy`, `move`, `remove` to enable proper functionality with base model
 `li3_filesystem\storage\FS` and filesystem entity `li3_filesystem\storage\filesystem\Entity`.
-
-#### Build status
-
-[![Build Status](https://travis-ci.org/djordje/li3_filesystem.png?branch=master)](https://travis-ci.org/djordje/li3_filesystem)

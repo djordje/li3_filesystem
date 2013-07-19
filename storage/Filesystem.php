@@ -6,50 +6,39 @@
  */
 
 namespace li3_filesystem\storage;
+use lithium\util\Validator;
 
 /**
  * Easy static access to all adapter's methods fetched by defined location name.
  *
  * Example:
  * {{{
- * class WebrootImg extends \li3_filesystem\storage\FS {
- *     public static $location = 'webroot_img';
- * }
- *
  * // List content of location
- * $ls = WebrootImg::ls();
+ * $ls = Filesystem::ls('location_name');
  *
  * // Make directory
- * $mkdir = WebrootImg::mkdir('dir_name');
+ * $mkdir = Filesystem::mkdir('location_name', 'dir_name');
  *
  * // Upload file
- * $upload = WebrootImg::upload($_FILES['uploaded'], '/');
+ * $upload = Filesystem::upload('location_name', $_FILES['uploaded'], '/');
  *
  * // Copy file
- * $copy = WebrootImg::copy('img.png', 'dir_name/img.png');
+ * $copy = Filesystem::copy('location_name', 'img.png', 'dir_name/img.png');
  *
  * // Move or rename file
- * $move = WebrootImg::move('img.png', 'old_img.png');
+ * $move = Filesystem::move('location_name', 'img.png', 'old_img.png');
  *
  * // Remove file
- * $remove = WebrootImg::remove('dir_name');
+ * $remove = Filesystem::remove('location_name', 'dir_name');
  * }}}
  *
  * Class FS represent base model for interaction with named location.
- * You should extend this model and overrive `$location` property to define what named location
+ * You should extend this model and override `$location` property to define what named location
  * will be used.
  *
  * @package li3_filesystem\storage
  */
-class FS extends \lithium\core\StaticObject {
-
-	/**
-	 * Location to initialize
-	 *
-	 * @var string
-	 * @see li3_filesystem\extensions\data\Locations::get()
-	 */
-	public static $location = 'default';
+class Filesystem extends \lithium\core\StaticObject {
 
 	/**
 	 * Stores object instances for internal use.
@@ -67,22 +56,18 @@ class FS extends \lithium\core\StaticObject {
 		'locations' => 'li3_filesystem\storage\Locations'
 	);
 
-	/**
-	 * State of model initialization
-	 *
-	 * @var boolean
-	 */
-	protected static $_initialized = false;
-
-	/**
-	 * Instantiate location adapter
-	 */
-	public static function __init() {
-		if (!static::$_initialized) {
+	protected static function _getAdapter($location) {
+		if (!isset(static::$_instances['adapter'][$location])) {
 			$locations = static::$_classes['locations'];
-			static::$_instances['adapter'] = $locations::get(static::$location);
-			static::$_initialized = true;
+			static::$_instances['adapter'][$location] = $locations::get($location);
 		}
+		$adapter = static::$_instances['adapter'][$location];
+
+		if ($adapter instanceof \li3_filesystem\storage\filesystem\Source) {
+			return $adapter;
+		}
+
+		return false;
 	}
 
 	/**
@@ -91,11 +76,14 @@ class FS extends \lithium\core\StaticObject {
 	 * @filter This method can be filtered.
 	 *
 	 * @param string $location
+	 * @param string $path
 	 * @return boolean|\lithium\util\Collection
 	 */
-	public static function ls($path = null) {
+	public static function ls($location, $path = null) {
+		if (!$adapter = static::_getAdapter($location)) {
+			return false;
+		}
 		$params = compact('path');
-		$adapter = static::$_instances['adapter'];
 		$callback = function($self, $params) use($adapter) {
 			return $adapter->ls($params['path']);
 		};
@@ -107,13 +95,16 @@ class FS extends \lithium\core\StaticObject {
 	 *
 	 * @filter This method can be filtered.
 	 *
+	 * @param string $location
 	 * @param string $name
 	 * @param array $options
 	 * @return boolean
 	 */
-	public static function mkdir($name, array $options = array()) {
+	public static function mkdir($location, $name, array $options = array()) {
+		if (!$adapter = static::_getAdapter($location)) {
+			return false;
+		}
 		$params = compact('name', 'options');
-		$adapter = static::$_instances['adapter'];
 		$callback = function($self, $params) use($adapter) {
 			return $adapter->mkdir($params['name'], $params['options']);
 		};
@@ -125,14 +116,27 @@ class FS extends \lithium\core\StaticObject {
 	 *
 	 * @filter This method can be filtered.
 	 *
+	 * @param string $location
 	 * @param array $file
 	 * @param string $destination
 	 * @param array $options
 	 * @return boolean
 	 */
-	public static function upload(array $file, $destination, array $options = array()) {
+	public static function upload($location, array $file, $destination = null, array $options = array()) {
+		$options += array('validates' => array());
+
+		if (!$adapter = static::_getAdapter($location)) {
+			return false;
+		}
+
+		if (!empty($options['validates']) && is_array($options['validates'])) {
+			$errors = Validator::check($file, $options['validates']);
+			if (!empty($errors)) {
+				return $errors;
+			}
+		}
+
 		$params = compact('file', 'destination', 'options');
-		$adapter = static::$_instances['adapter'];
 		$callback = function($self, $params) use($adapter) {
 			return $adapter->upload($params['file'], $params['destination'], $params['options']);
 		};
@@ -144,14 +148,17 @@ class FS extends \lithium\core\StaticObject {
 	 *
 	 * @filter This method can be filtered.
 	 *
+	 * @param string $location
 	 * @param string $source
 	 * @param string $destination
 	 * @param array $options
 	 * @return boolean
 	 */
-	public static function copy($source, $destination, array $options = array()) {
+	public static function copy($location, $source, $destination, array $options = array()) {
+		if (!$adapter = static::_getAdapter($location)) {
+			return false;
+		}
 		$params = compact('source', 'destination', 'options');
-		$adapter = static::$_instances['adapter'];
 		$callback = function($self, $params) use($adapter) {
 			return $adapter->copy($params['source'], $params['destination'], $params['options']);
 		};
@@ -163,14 +170,17 @@ class FS extends \lithium\core\StaticObject {
 	 *
 	 * @filter This method can be filtered.
 	 *
+	 * @param string $location
 	 * @param string $source
 	 * @param string $destination
 	 * @param array $options
 	 * @return boolean
 	 */
-	public static function move($source, $destination) {
+	public static function move($location, $source, $destination) {
+		if (!$adapter = static::_getAdapter($location)) {
+			return false;
+		}
 		$params = compact('source', 'destination');
-		$adapter = static::$_instances['adapter'];
 		$callback = function($self, $params) use($adapter) {
 			return $adapter->move($params['source'], $params['destination']);
 		};
@@ -182,13 +192,16 @@ class FS extends \lithium\core\StaticObject {
 	 *
 	 * @filter This method can be filtered.
 	 *
+	 * @param string $location
 	 * @param string $path
 	 * @param array $options
 	 * @return boolean
 	 */
-	public static function remove($path, array $options = array()) {
+	public static function remove($location, $path, array $options = array()) {
+		if (!$adapter = static::_getAdapter($location)) {
+			return false;
+		}
 		$params = compact('path', 'options');
-		$adapter = static::$_instances['adapter'];
 		$callback = function($self, $params) use($adapter) {
 			return $adapter->remove($params['path'], $params['options']);
 		};

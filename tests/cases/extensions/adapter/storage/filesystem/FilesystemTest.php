@@ -20,15 +20,15 @@ class FilesystemTest extends \lithium\test\Unit {
 
 		$this->_timestamp = time();
 
-		$this->_tmp_dir = sys_get_temp_dir() . '/' . $this->_timestamp . '_test';
+		$this->_tmp_dir = sys_get_temp_dir() . '/li3_fs_' . $this->_timestamp . '_test-1';
 
-		Locations::add('test', array(
+		Locations::add('test-1', array(
 			'adapter' => 'Filesystem',
 			'url' => 'http://example.com/tmp/',
 			'location' => $this->_tmp_dir
 		));
 
-		$this->_adapter = Locations::get('test');
+		$this->_adapter = Locations::get('test-1');
 	}
 
 	public function skip() {
@@ -39,17 +39,8 @@ class FilesystemTest extends \lithium\test\Unit {
 		);
 		$this->skipIf(
 			$this->_adapter->_config['location'] !== $this->_tmp_dir,
-			"Location should be `li3_filesystem/tests/location/{$this->_timestamp}_test`."
+			"Location should be `{$this->_tmp_dir}`."
 		);
-		$this->skipIf(
-			!is_writable(
-				Libraries::path('li3_filesystem\\', array('dirs' => true)) . '/tests/location'),
-				'Test location not writable!<br />' .
-				'Check does `li3_filemanager/resources/tmp`' .
-				'directorty exists if not create it.<br />' .
-				'On *nix OS-es you should <code>$ chmod -R 0777' .
-				'libraries/li3_filemanager/resources</code>'
-			);
 		$this->skipIf(!mkdir($this->_tmp_dir), 'Couldn\'t create directory for further testing!');
 		$this->skipIf(
 			!file_put_contents("{$this->_tmp_dir}/test.txt", "This is test data\n"),
