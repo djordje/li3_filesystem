@@ -3,7 +3,6 @@
 namespace li3_filesystem\tests\cases\extensions\adapter\storage\filesystem;
 
 use li3_filesystem\storage\Locations;
-use lithium\core\Libraries;
 
 class FilesystemTest extends \lithium\test\Unit {
 
@@ -35,7 +34,7 @@ class FilesystemTest extends \lithium\test\Unit {
 		$this->skipIf(!is_object($this->_adapter), 'Adapter not initialized');
 		$this->skipIf(
 			$this->_adapter->_config['adapter'] !== 'Filesystem',
-			'Adapter should be `FileSystem`.'
+			'Adapter should be `Filesystem`.'
 		);
 		$this->skipIf(
 			$this->_adapter->_config['location'] !== $this->_tmp_dir,
