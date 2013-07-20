@@ -14,7 +14,7 @@ class LocationsTest extends \lithium\test\Unit {
 	
 	public function testAdding() {
 		$location = Locations::add('test', array(
-			'adapter' => 'FileSystem',
+			'adapter' => 'Filesystem',
 			'location' => Libraries::path(false, array('dirs' => true)) . '/resources/tmp'
 		));
 		$this->assertTrue(is_array($location));
